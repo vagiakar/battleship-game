@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Battleship</title>
+    <script
+      src="https://kit.fontawesome.com/177ef15564.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="sound">
+      <div class="sound-music" data-music="true">
+        <i class="sound-icon fas fa-music"></i>
+      </div>
+      <div class="sound-mute" data-muted="false">
+        <i class="sound-icon fas fa-volume-up"></i>
+        <i class="sound-icon fas fa-volume-mute display-none"></i>
+      </div>
+    </div>
+    <div class="start-game display-none" id="start-game">
+      <h1>Battleship</h1>
+      <button class="btn btn-vs-computer" id="btn-vs-computer">
+        VS Computer
+      </button>
+    </div>
+    <div class="strategy-panel" id="strategy-panel">
+      <div class="strategy-flex-container">
+        <div>
+          <div class="strategy-player-grid">
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+            <div class="strategy-player-grid-item"></div>
+          </div>
+          <div class="strategy-ships-grid">
+            <div class="ship ship-2" draggable="true"></div>
+            <div class="ship ship-3" draggable="true"></div>
+            <div class="ship ship-3" draggable="true"></div>
+            <div class="ship ship-4" draggable="true"></div>
+            <div class="ship ship-5" draggable="true"></div>
+          </div>
+        </div>
+        <div class="strategy-buttons-container" data-placed-all="false">
+          <button class="btn btn-strategy rotate" id="rotate">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+          <button class="btn btn-strategy delete-all" id="delete-all">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+          <button class="btn btn-strategy startGame visibility-hidden">
+            Start
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="game"></div>
+  </body>
+</html>
