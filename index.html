@@ -10,6 +10,7 @@
       crossorigin="anonymous"
     ></script>
     <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
   </head>
   <body>
     <div class="sound">
@@ -21,8 +22,8 @@
         <i class="sound-icon fas fa-volume-mute display-none"></i>
       </div>
     </div>
-    <div class="start-game display-none" id="start-game">
-      <h1>Battleship</h1>
+    <div class="start-game" id="start-game">
+      <h1 id="start-game-heading">Battleship</h1>
       <button class="btn btn-vs-computer" id="btn-vs-computer">
         VS Computer
       </button>
@@ -153,7 +154,7 @@
         </div>
       </div>
     </div>
-    <div class="game">
+    <div class="game display-none">
       <div class="game-player-grid">
         <div class="game-player-grid-item"></div>
         <div class="game-player-grid-item"></div>

@@ -93,15 +93,23 @@ img {
   justify-content: center;
   align-items: center;
   max-width: 1100px;
+  opacity: 1;
+  visibility: visible;
+  transition: var(--main-transition);
 }
 .start-game h1 {
   font-size: 8rem;
   margin-bottom: 2rem;
+  opacity: 1;
+  visibility: visible;
+  transition: var(--main-transition);
 }
 .btn-vs-computer {
   background: var(--red);
   color: white;
   font-size: 2rem;
+  opacity: 1;
+  visibility: visible;
   transition: var(--main-transition);
 }
 .btn-vs-computer:hover {
@@ -276,6 +284,7 @@ img {
     margin-bottom: 2rem;
   }
 }
+/*game-over*/
 .game-over {
   position: fixed;
   top: 0;
@@ -328,4 +337,5 @@ img {
 .visibility-hidden {
   visibility: hidden;
   opacity: 0;
+  font-size: 0;
 }
