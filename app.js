@@ -81,6 +81,14 @@ function dragAndDropShips() {
       dragoverColumns,
       dragoverGridIndexes,
     ] = getDragoverRowsAndColumns(closestIndex, draggingLength);
+    const isOverShip = dragoverGridIndexes.some((index) => {
+      return playerGridData[index].placed != null;
+    });
+    if (isOverShip) {
+      dragoverRows = null;
+      dragoverColumns = null;
+      dragoverGridIndexes = null;
+    }
   });
 }
 function isOutOfGrid(positionLeft, positionTop, positionRight, positionBottom) {
@@ -91,7 +99,6 @@ function isOutOfGrid(positionLeft, positionTop, positionRight, positionBottom) {
   if (positionRight - gridBox.right > 0) return true;
   return false;
 }
-
 function removePreviousHover() {
   strategyPlayerGridItems.forEach((item) => {
     item.classList.remove("dragover");
