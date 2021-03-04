@@ -75,7 +75,7 @@ function dragAndDropShips() {
       dragoverGridIndexes = null;
       return;
     }
-    addHover(closestIndex, draggingLength);
+
     [
       dragoverRows,
       dragoverColumns,
@@ -88,7 +88,9 @@ function dragAndDropShips() {
       dragoverRows = null;
       dragoverColumns = null;
       dragoverGridIndexes = null;
+      return;
     }
+    addHover(closestIndex, draggingLength);
   });
 }
 function isOutOfGrid(positionLeft, positionTop, positionRight, positionBottom) {
