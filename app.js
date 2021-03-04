@@ -56,18 +56,25 @@ function dragAndDropShips() {
 
   strategyPlayerGrid.addEventListener("dragover", (e) => {
     e.preventDefault();
-    const [positionX, positionY] = getDraggingLeftPosition(
-      clickOffsetX,
-      clickOffsetY,
-      e.clientX,
-      e.clientY
-    );
-    const closest = getClosestGridItem(positionX, positionY);
+    const [
+      positionLeft,
+      positionTop,
+      positionRight,
+      positionBottom,
+    ] = getDraggingPosition(clickOffsetX, clickOffsetY, e.clientX, e.clientY);
+
+    const closest = getClosestGridItem(positionLeft, positionTop);
     const { index: closestIndex } = closest;
     removePreviousHover();
     const draggingLength = parseInt(
       document.querySelector(".dragging").dataset.shipLength
     );
+    if (isOutOfGrid(positionLeft, positionTop, positionRight, positionBottom)) {
+      dragoverRows = null;
+      dragoverColumns = null;
+      dragoverGridIndexes = null;
+      return;
+    }
     addHover(closestIndex, draggingLength);
     [
       dragoverRows,
@@ -75,6 +82,14 @@ function dragAndDropShips() {
       dragoverGridIndexes,
     ] = getDragoverRowsAndColumns(closestIndex, draggingLength);
   });
+}
+function isOutOfGrid(positionLeft, positionTop, positionRight, positionBottom) {
+  const gridBox = strategyPlayerGrid.getBoundingClientRect();
+  if (positionTop - gridBox.top < 0) return true;
+  if (positionLeft - gridBox.left < 0) return true;
+  if (positionBottom - gridBox.bottom > 0) return true;
+  if (positionRight - gridBox.right > 0) return true;
+  return false;
 }
 
 function removePreviousHover() {
@@ -84,18 +99,19 @@ function removePreviousHover() {
 }
 
 function addHover(closestIndex, draggingLength) {
-  if (!isDraggingInMultipleRows(closestIndex, draggingLength)) {
-    for (let i = closestIndex; i < closestIndex + draggingLength; i++) {
-      strategyPlayerGridItems[i].classList.add("dragover");
-    }
+  for (let i = closestIndex; i < closestIndex + draggingLength; i++) {
+    strategyPlayerGridItems[i].classList.add("dragover");
   }
 }
 
-function getDraggingLeftPosition(clickOffsetX, clickOffsetY, x, y) {
-  const positionX = x - clickOffsetX;
-  const positionY = y - clickOffsetY;
-
-  return [positionX, positionY];
+function getDraggingPosition(clickOffsetX, clickOffsetY, x, y) {
+  const positionLeft = x - clickOffsetX;
+  const positionTop = y - clickOffsetY;
+  const dragging = document.querySelector(".dragging");
+  const draggingBox = dragging.getBoundingClientRect();
+  const positionRight = positionLeft + draggingBox.width;
+  const positionBottom = positionTop + draggingBox.height;
+  return [positionLeft, positionTop, positionRight, positionBottom];
 }
 
 function getClosestGridItem(positionX, positionY) {
@@ -115,8 +131,6 @@ function getClosestGridItem(positionX, positionY) {
 }
 
 function getDragoverRowsAndColumns(closestIndex, draggingLength) {
-  if (isDraggingInMultipleRows(closestIndex, draggingLength))
-    return [null, null, null];
   let dragoverRows = [];
   let dragoverColumns = [];
   let dragoverGridIndexes = [];
@@ -130,16 +144,6 @@ function getDragoverRowsAndColumns(closestIndex, draggingLength) {
   dragoverRows = [...new Set(dragoverRows)];
   dragoverColumns = [...new Set(dragoverColumns)];
   return [dragoverRows, dragoverColumns, dragoverGridIndexes];
-}
-
-function isDraggingInMultipleRows(index, length) {
-  let row = getGridRow(index);
-  for (let i = index + 1; i <= index + length - 1; i++) {
-    if (getGridRow(i) !== row) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function getGridRow(index) {
