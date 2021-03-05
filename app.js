@@ -6,22 +6,29 @@ const strategyPlayerGrid = document.querySelector("#strategy-player-grid");
 const strategyPlayerGridItems = [
   ...document.querySelectorAll("[data-strategy-player-grid-item]"),
 ];
+const rotateBtn = document.querySelector("#rotate-btn");
+let dragoverRows = null;
+let dragoverColumns = null;
+let dragoverIndexes = null;
+let dragging;
+let isHorizontal;
+let draggingLength;
 const GRID_SIZE = 10;
 let playerGridData = [];
 
-initialisePlayerGridData();
-
 btnVSComputer.addEventListener("click", handleStrategy);
+
+function handleStrategy() {
+  initialisePlayerGridData();
+  displayStrategySection();
+  handleDragAndDropShips();
+  handleRotate();
+}
 
 function initialisePlayerGridData() {
   for (let i = 0; i < 100; i++) {
     playerGridData.push({ placed: null, hit: null });
   }
-}
-
-function handleStrategy() {
-  displayStrategySection();
-  dragAndDropShips();
 }
 
 function displayStrategySection() {
@@ -31,91 +38,72 @@ function displayStrategySection() {
   strategySection.classList.remove("display-none");
 }
 
-function dragAndDropShips() {
+function handleDragAndDropShips() {
   let clickOffsetX;
   let clickOffsetY;
-  let dragoverRows;
-  let dragoverColumns;
-  let dragoverIndexes;
-  let dragging;
   const ships = [...document.querySelectorAll("[data-ship-length]")];
   ships.forEach((ship) => {
     ship.addEventListener("dragstart", (e) => {
-      e.target.classList.add("dragging");
-      dragging = document.querySelector(".dragging");
-      clickOffsetX = e.offsetX;
-      clickOffsetY = e.offsetY;
+      [clickOffsetX, clickOffsetY] = dragStart(e, clickOffsetX, clickOffsetY);
     });
     ship.addEventListener("dragend", (e) => {
-      dropShip(dragoverRows, dragoverColumns, dragoverIndexes, dragging);
-      e.target.classList.remove("dragging");
-      strategyPlayerGridItems.forEach((item) => {
-        item.classList.remove("dragover");
-      });
+      dragEnd(e);
     });
   });
   strategyPlayerGrid.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    const [
+    dragover(e, clickOffsetX, clickOffsetY);
+  });
+}
+
+function dragStart(e, clickOffsetX, clickOffsetY) {
+  e.target.classList.add("dragging");
+  dragging = document.querySelector(".dragging");
+  draggingLength = parseInt(dragging.dataset.shipLength);
+  dragoverRows = null;
+  dragoverColumns = null;
+  dragoverIndexes = null;
+  isHorizontal = isDraggingHorizontal();
+  clickOffsetX = e.offsetX;
+  clickOffsetY = e.offsetY;
+  return [clickOffsetX, clickOffsetY];
+}
+
+function dragEnd(e) {
+  dropShip();
+  e.target.classList.remove("dragging");
+  strategyPlayerGridItems.forEach((item) => {
+    item.classList.remove("dragover");
+  });
+}
+
+function dragover(e, clickOffsetX, clickOffsetY) {
+  e.preventDefault();
+  removePreviousHover();
+  const [
+    draggingPositionLeft,
+    draggingPositionTop,
+    draggingPositionRight,
+    draggingPositionBottom,
+  ] = getDraggingPosition(clickOffsetX, clickOffsetY, e.clientX, e.clientY);
+  const closest = getClosestGridItem(draggingPositionLeft, draggingPositionTop);
+  const closestIndex = closest.index;
+  changeDragoverIndexes(closestIndex);
+  changeDragoverRowsAndColumns();
+  if (
+    isOverShip(dragoverIndexes) ||
+    isOutOfGrid(
       draggingPositionLeft,
       draggingPositionTop,
       draggingPositionRight,
-      draggingPositionBottom,
-    ] = getDraggingPosition(
-      clickOffsetX,
-      clickOffsetY,
-      e.clientX,
-      e.clientY,
-      dragging
-    );
-    const closest = getClosestGridItem(
-      draggingPositionLeft,
-      draggingPositionTop
-    );
-    const closestIndex = closest.index;
-    removePreviousHover();
-    const draggingLength = parseInt(dragging.dataset.shipLength);
-    dragoverIndexes = getDragoverIndexes(closestIndex, draggingLength);
-    if (
-      isOverShip(dragoverIndexes) ||
-      isOutOfGrid(
-        draggingPositionLeft,
-        draggingPositionTop,
-        draggingPositionRight,
-        draggingPositionBottom
-      )
-    ) {
-      dragoverRows = null;
-      dragoverColumns = null;
-      dragoverIndexes = null;
-      return;
-    }
-    [dragoverRows, dragoverColumns] = getDragoverRowsAndColumns(
-      closestIndex,
-      draggingLength
-    );
-    addHover(closestIndex, draggingLength);
-  });
-}
-
-function isOverShip(dragoverIndexes) {
-  return dragoverIndexes.some((index) => {
-    return playerGridData[index].placed != null;
-  });
-}
-
-function isOutOfGrid(
-  draggingPositionLeft,
-  draggingPositionTop,
-  draggingPositionRight,
-  draggingPositionBottom
-) {
-  const gridBox = strategyPlayerGrid.getBoundingClientRect();
-  if (draggingPositionTop - gridBox.top < 0) return true;
-  if (draggingPositionLeft - gridBox.left < 0) return true;
-  if (draggingPositionBottom - gridBox.bottom > 0) return true;
-  if (draggingPositionRight - gridBox.right > 0) return true;
-  return false;
+      draggingPositionBottom
+    )
+  ) {
+    dragoverRows = null;
+    dragoverColumns = null;
+    dragoverIndexes = null;
+    return;
+  }
+  addHover();
 }
 
 function removePreviousHover() {
@@ -124,13 +112,7 @@ function removePreviousHover() {
   });
 }
 
-function addHover(closestIndex, draggingLength) {
-  for (let i = closestIndex; i < closestIndex + draggingLength; i++) {
-    strategyPlayerGridItems[i].classList.add("dragover");
-  }
-}
-
-function getDraggingPosition(clickOffsetX, clickOffsetY, x, y, dragging) {
+function getDraggingPosition(clickOffsetX, clickOffsetY, x, y) {
   const draggingPositionLeft = x - clickOffsetX;
   const draggingPositionTop = y - clickOffsetY;
   const draggingBox = dragging.getBoundingClientRect();
@@ -160,26 +142,65 @@ function getClosestGridItem(positionX, positionY) {
   );
 }
 
-function getDragoverIndexes(closestIndex, draggingLength) {
-  let dragoverIndexes = [];
-  for (let i = closestIndex; i < closestIndex + draggingLength; i++) {
-    dragoverIndexes.push(i);
+function changeDragoverIndexes(closestIndex) {
+  dragoverIndexes = [];
+  if (isHorizontal) {
+    for (let i = closestIndex; i < closestIndex + draggingLength; i++) {
+      dragoverIndexes.push(i);
+    }
+  } else {
+    for (
+      let i = closestIndex;
+      i < closestIndex + draggingLength * GRID_SIZE;
+      i = i + GRID_SIZE
+    ) {
+      dragoverIndexes.push(i);
+    }
   }
-  return dragoverIndexes;
+  if (!checkIfIndexesExist(dragoverIndexes)) {
+    dragoverIndexes = null;
+  }
 }
 
-function getDragoverRowsAndColumns(closestIndex, draggingLength) {
-  let dragoverRows = [];
-  let dragoverColumns = [];
-  for (let i = closestIndex; i < closestIndex + draggingLength; i++) {
-    const row = getGridRow(i);
-    const column = getGridColumn(i);
-    dragoverRows.push(row);
-    dragoverColumns.push(column);
+function isOverShip(indexes, rotate = null) {
+  if (indexes == null) return;
+  const newindexes = [...indexes];
+  if (rotate) {
+    newindexes.shift();
   }
+  return newindexes.some((index) => {
+    return playerGridData[index].placed != null;
+  });
+}
+
+function isOutOfGrid(
+  draggingPositionLeft,
+  draggingPositionTop,
+  draggingPositionRight,
+  draggingPositionBottom
+) {
+  const gridBox = strategyPlayerGrid.getBoundingClientRect();
+  if (draggingPositionTop - gridBox.top < 0) return true;
+  if (draggingPositionLeft - gridBox.left < 0) return true;
+  if (draggingPositionBottom - gridBox.bottom > 0) return true;
+  if (draggingPositionRight - gridBox.right > 0) return true;
+  return false;
+}
+
+function changeDragoverRowsAndColumns() {
+  if (!checkIfIndexesExist(dragoverIndexes)) {
+    dragoverRows = null;
+    dragoverColumns = null;
+    return;
+  }
+  dragoverRows = [];
+  dragoverColumns = [];
+  dragoverIndexes.forEach((index) => {
+    dragoverRows.push(getGridRow(index));
+    dragoverColumns.push(getGridColumn(index));
+  });
   dragoverRows = [...new Set(dragoverRows)];
   dragoverColumns = [...new Set(dragoverColumns)];
-  return [dragoverRows, dragoverColumns];
 }
 
 function getGridRow(index) {
@@ -190,7 +211,14 @@ function getGridColumn(index) {
   return (index % GRID_SIZE) + 1;
 }
 
-function dropShip(dragoverRows, dragoverColumns, dragoverIndexes, dragging) {
+function addHover() {
+  if (dragoverIndexes == null) return;
+  dragoverIndexes.forEach((index) => {
+    strategyPlayerGridItems[index].classList.add("dragover");
+  });
+}
+
+function dropShip() {
   if (
     dragoverRows == null ||
     dragoverColumns == null ||
@@ -198,21 +226,21 @@ function dropShip(dragoverRows, dragoverColumns, dragoverIndexes, dragging) {
   )
     return;
 
-  addGridItems(dragging);
-  removeStrategyPlaced(dragging);
-  changeGridDropPosition(dragoverRows, dragoverColumns, dragging);
-  removeGridItems(dragoverIndexes);
-  addStrategyPlaced(dragoverIndexes, dragging);
+  addGridItems();
+  removeStrategyPlaced();
+  changeGridDropPosition();
+  removeGridItems();
+  addStrategyPlaced();
   strategyPlayerGrid.appendChild(dragging);
 }
 
-function removeGridItems(dragoverIndexes) {
+function removeGridItems() {
   dragoverIndexes.forEach((index) => {
     strategyPlayerGridItems[index].classList.add("display-none");
   });
 }
 
-function addGridItems(dragging) {
+function addGridItems() {
   strategyPlayerGridItems.forEach((item, index) => {
     if (playerGridData[index].placed === dragging.classList[1]) {
       item.classList.remove("display-none");
@@ -220,7 +248,7 @@ function addGridItems(dragging) {
   });
 }
 
-function removeStrategyPlaced(dragging) {
+function removeStrategyPlaced() {
   strategyPlayerGridItems.forEach((item, index) => {
     if (playerGridData[index].placed === dragging.classList[1]) {
       playerGridData[index].placed = null;
@@ -228,18 +256,144 @@ function removeStrategyPlaced(dragging) {
   });
 }
 
-function addStrategyPlaced(dragoverIndexes, dragging) {
+function addStrategyPlaced() {
   dragoverIndexes.forEach((index) => {
     playerGridData[index].placed = dragging.classList[1];
   });
 }
 
-function changeGridDropPosition(dragoverRows, dragoverColumns, dragging) {
+function changeGridDropPosition() {
   const firstRow = dragoverRows[0];
   const lastRow = dragoverRows[dragoverRows.length - 1];
   const firstColumn = dragoverColumns[0];
   const lastColumn = dragoverColumns[dragoverColumns.length - 1];
-
   dragging.style.gridRow = `${firstRow}/${lastRow + 1}`;
   dragging.style.gridColumn = `${firstColumn}/${lastColumn + 1}`;
 }
+
+function handleRotate() {
+  rotateBtn.addEventListener("click", () => {
+    if (
+      dragoverIndexes == null ||
+      dragoverColumns == null ||
+      dragoverRows == null
+    )
+      return;
+
+    const [newDragoverRows, newDragoverColumns] = getNewRotatePosition();
+    const newDragoverIndexes = getDragoverIndexesFromRowsAndColumns(
+      newDragoverRows,
+      newDragoverColumns
+    );
+    const canRotate = checkIfCanBeRotated(
+      newDragoverIndexes,
+      newDragoverRows,
+      newDragoverColumns
+    );
+    rotate(canRotate, newDragoverRows, newDragoverColumns, newDragoverIndexes);
+  });
+}
+
+function rotate(
+  canRotate,
+  newDragoverRows,
+  newDragoverColumns,
+  newDragoverIndexes
+) {
+  if (canRotate) {
+    isHorizontal = !isHorizontal;
+    dragging.dataset.horizontal = isHorizontal.toString();
+    dragoverRows = newDragoverRows;
+    dragoverColumns = newDragoverColumns;
+    dragoverIndexes = newDragoverIndexes;
+    dropShip();
+  }
+}
+
+function checkIfCanBeRotated(
+  newDragoverIndexes,
+  newDragoverRows,
+  newDragoverColumns
+) {
+  let canRotate = true;
+  if (
+    !checkIfIndexesExist(newDragoverIndexes) ||
+    !checkIfRowOrColumnExists(newDragoverRows, newDragoverColumns) ||
+    isOverShip(newDragoverIndexes, true)
+  ) {
+    canRotate = false;
+  }
+  return canRotate;
+}
+
+function checkIfIndexesExist(indexes) {
+  if (indexes == null) return false;
+  if (
+    indexes.some((index) => {
+      return index >= 100;
+    })
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function checkIfRowOrColumnExists(rows, columns) {
+  if (
+    rows.some((row) => {
+      return row > GRID_SIZE;
+    }) ||
+    columns.some((column) => {
+      return column > GRID_SIZE;
+    })
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function getNewRotatePosition() {
+  let newDragoverColumns = [];
+  let newDragoverRows = [];
+  if (isHorizontal) {
+    for (let i = dragoverRows[0]; i < dragoverRows[0] + draggingLength; i++) {
+      newDragoverRows.push(i);
+    }
+    newDragoverColumns = [dragoverColumns[0]];
+  } else {
+    for (
+      let i = dragoverColumns[0];
+      i < dragoverColumns[0] + draggingLength;
+      i++
+    ) {
+      newDragoverColumns.push(i);
+    }
+    newDragoverRows = [dragoverRows[0]];
+  }
+  return [newDragoverRows, newDragoverColumns];
+}
+
+function isDraggingHorizontal() {
+  if (dragging.dataset.horizontal === "true") return true;
+  return false;
+}
+
+function getDragoverIndexesFromRowsAndColumns(
+  newDragoverRows,
+  newDragoverColumns
+) {
+  const newDragoverIndexes = [];
+  for (let i = 0; i < newDragoverRows.length; i++) {
+    for (let j = 0; j < newDragoverColumns.length; j++) {
+      const row = newDragoverRows[i];
+      const column = newDragoverColumns[j];
+      newDragoverIndexes.push(GRID_SIZE * (row - 1) + column - 1);
+    }
+  }
+  newDragoverIndexes.sort((a, b) => {
+    a - b;
+  });
+  return newDragoverIndexes;
+}
+
+function clearAll() {}
