@@ -11,6 +11,7 @@ const startGameBtn = document.querySelector("#start-game-btn");
 const deleteAllBtn = document.querySelector("#delete-all-btn");
 const shipsGrid = document.querySelector("#ships-grid");
 const ships = [...document.querySelectorAll("[data-ship-name]")];
+const game = document.querySelector("#game");
 let dragoverRows = null;
 let dragoverColumns = null;
 let dragoverIndexes = null;
@@ -19,6 +20,7 @@ let isHorizontal;
 let draggingLength;
 const GRID_SIZE = 10;
 let playerGridData = [];
+let computerGridData = [];
 
 btnVSComputer.addEventListener("click", handleStrategy);
 
@@ -27,20 +29,17 @@ startGameBtn.addEventListener("click", () => {
 });
 
 function handleStrategy() {
-  initialisePlayerGridData();
+  initialiseGridData();
   displayStrategySection();
   handleDragAndDropShips();
   handleRotate();
   handleDeleteAll();
 }
 
-function handleGame() {
-  console.log(playerGridData);
-}
-
-function initialisePlayerGridData() {
+function initialiseGridData() {
   for (let i = 0; i < 100; i++) {
     playerGridData.push({ placed: null, hit: null });
+    computerGridData.push({ placed: null, hit: null });
   }
 }
 
@@ -432,6 +431,7 @@ function handleDeleteAll() {
       ship.style.gridRow = ``;
       ship.style.gridColumn = ``;
       dragging = null;
+      ship.dataset.horizontal = "true";
       playerGridData.forEach((item) => {
         item.placed = null;
       });
@@ -441,5 +441,53 @@ function handleDeleteAll() {
       shipsGrid.appendChild(ship);
       startGameBtn.classList.add("visibility-hidden");
     });
+  });
+}
+
+function handleGame() {
+  displayGameSection();
+  fillComputerGrid();
+  console.log(computerGridData);
+}
+
+function displayGameSection() {
+  strategySection.classList.add("display-none");
+  game.classList.remove("display-none");
+}
+
+function fillComputerGrid() {
+  ships.forEach((ship) => {
+    let shipIndexes = null;
+    while (
+      !checkIfIndexesExist(shipIndexes) ||
+      checkIfIndexesAreFilled(shipIndexes, computerGridData)
+    ) {
+      shipIndexes = [];
+      const shipLength = parseInt(ship.dataset.shipLength);
+      const randomIndex = Math.floor(Math.random() * 100);
+      const randomIsHorizontal = Math.random() < 0.5;
+      if (randomIsHorizontal) {
+        for (let i = randomIndex; i < randomIndex + shipLength; i++) {
+          shipIndexes.push(i);
+        }
+      } else {
+        for (
+          let i = randomIndex;
+          i < randomIndex + shipLength * GRID_SIZE;
+          i = i + GRID_SIZE
+        ) {
+          shipIndexes.push(i);
+        }
+      }
+    }
+    shipIndexes.forEach((index) => {
+      computerGridData[index].placed = ship.dataset.shipName;
+    });
+  });
+}
+
+function checkIfIndexesAreFilled(indexes, data) {
+  return indexes.some((index) => {
+    return data[index].placed !== null;
   });
 }
