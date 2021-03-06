@@ -12,6 +12,17 @@ const deleteAllBtn = document.querySelector("#delete-all-btn");
 const shipsGrid = document.querySelector("#ships-grid");
 const ships = [...document.querySelectorAll("[data-ship-name]")];
 const game = document.querySelector("#game");
+const computerGridItems = [
+  ...document.querySelectorAll("[data-computer-grid-item]"),
+];
+const playerGridItems = [
+  ...document.querySelectorAll("[data-player-grid-item]"),
+];
+const turnText = document.querySelector("#turn-text");
+const gameoverSection = document.querySelector("#game-over-section");
+const gameResult = document.querySelector("#game-result");
+const gameoverModal = document.querySelector("#game-over-modal");
+const restartBtn = document.querySelector("#restart-btn");
 let dragoverRows = null;
 let dragoverColumns = null;
 let dragoverIndexes = null;
@@ -310,7 +321,7 @@ function handleRotate() {
       return;
 
     const [newDragoverRows, newDragoverColumns] = getNewRotatePosition();
-    const newDragoverIndexes = getDragoverIndexesFromRowsAndColumns(
+    const newDragoverIndexes = getIndexesFromRowsAndColumns(
       newDragoverRows,
       newDragoverColumns
     );
@@ -407,40 +418,41 @@ function isDraggingHorizontal() {
   return false;
 }
 
-function getDragoverIndexesFromRowsAndColumns(
-  newDragoverRows,
-  newDragoverColumns
-) {
-  const newDragoverIndexes = [];
-  for (let i = 0; i < newDragoverRows.length; i++) {
-    for (let j = 0; j < newDragoverColumns.length; j++) {
-      const row = newDragoverRows[i];
-      const column = newDragoverColumns[j];
-      newDragoverIndexes.push(GRID_SIZE * (row - 1) + column - 1);
+function getIndexesFromRowsAndColumns(rows, columns) {
+  const indexes = [];
+  for (let i = 0; i < rows.length; i++) {
+    for (let j = 0; j < columns.length; j++) {
+      const row = rows[i];
+      const column = columns[j];
+      indexes.push(GRID_SIZE * (row - 1) + column - 1);
     }
   }
-  newDragoverIndexes.sort((a, b) => {
+  indexes.sort((a, b) => {
     a - b;
   });
-  return newDragoverIndexes;
+  return indexes;
 }
 
 function handleDeleteAll() {
   deleteAllBtn.addEventListener("click", () => {
-    ships.forEach((ship) => {
-      ship.style.gridRow = ``;
-      ship.style.gridColumn = ``;
-      dragging = null;
-      ship.dataset.horizontal = "true";
-      playerGridData.forEach((item) => {
-        item.placed = null;
-      });
-      strategyPlayerGridItems.forEach((item) => {
-        item.classList.remove("display-none");
-      });
-      shipsGrid.appendChild(ship);
-      startGameBtn.classList.add("visibility-hidden");
+    undropShips();
+  });
+}
+
+function undropShips() {
+  ships.forEach((ship) => {
+    ship.style.gridRow = ``;
+    ship.style.gridColumn = ``;
+    dragging = null;
+    ship.dataset.horizontal = "true";
+    playerGridData.forEach((item) => {
+      item.placed = null;
     });
+    strategyPlayerGridItems.forEach((item) => {
+      item.classList.remove("display-none");
+    });
+    shipsGrid.appendChild(ship);
+    startGameBtn.classList.add("visibility-hidden");
   });
 }
 
@@ -448,6 +460,7 @@ function handleGame() {
   displayGameSection();
   fillComputerGrid();
   console.log(computerGridData);
+  hitShipLogic();
 }
 
 function displayGameSection() {
@@ -458,27 +471,33 @@ function displayGameSection() {
 function fillComputerGrid() {
   ships.forEach((ship) => {
     let shipIndexes = null;
+    let shipRows = null;
+    let shipColumns = null;
     while (
       !checkIfIndexesExist(shipIndexes) ||
+      !checkIfRowOrColumnExists(shipRows, shipColumns) ||
       checkIfIndexesAreFilled(shipIndexes, computerGridData)
     ) {
       shipIndexes = [];
+      shipRows = [];
+      shipColumns = [];
       const shipLength = parseInt(ship.dataset.shipLength);
       const randomIndex = Math.floor(Math.random() * 100);
       const randomIsHorizontal = Math.random() < 0.5;
+      const rowStart = getGridRow(randomIndex);
+      const columnStart = getGridColumn(randomIndex);
       if (randomIsHorizontal) {
-        for (let i = randomIndex; i < randomIndex + shipLength; i++) {
-          shipIndexes.push(i);
+        for (let i = rowStart; i < rowStart + shipLength; i++) {
+          shipRows.push(i);
         }
+        shipColumns.push(columnStart);
       } else {
-        for (
-          let i = randomIndex;
-          i < randomIndex + shipLength * GRID_SIZE;
-          i = i + GRID_SIZE
-        ) {
-          shipIndexes.push(i);
+        for (let i = columnStart; i < columnStart + shipLength; i++) {
+          shipColumns.push(i);
         }
+        shipRows.push(rowStart);
       }
+      shipIndexes = getIndexesFromRowsAndColumns(shipRows, shipColumns);
     }
     shipIndexes.forEach((index) => {
       computerGridData[index].placed = ship.dataset.shipName;
@@ -490,4 +509,112 @@ function checkIfIndexesAreFilled(indexes, data) {
   return indexes.some((index) => {
     return data[index].placed !== null;
   });
+}
+
+function hitShipLogic() {
+  computerGridItems.forEach((item, index) => {
+    item.addEventListener("click", () => handleClick(item, index), {
+      once: true,
+    });
+  });
+}
+
+function handleClick(item, index) {
+  playerMove(item, index);
+  if (checkForWin(computerGridData)) {
+    console.log("player wins");
+    gameoverSection.classList.remove("visibility-hidden");
+    gameoverModal.classList.add("active");
+    gameResult.innerText = "VICTORY";
+    return;
+  }
+  changeTurnText("Computer");
+  computerGridItems.forEach((item) => {
+    item.style.pointerEvents = "none";
+  });
+  setTimeout(() => {
+    computerMove();
+    if (checkForWin(playerGridData)) {
+      console.log("computer wins");
+      gameoverSection.classList.remove("visibility-hidden");
+      gameoverModal.classList.add("active");
+      gameResult.innerText = "YOU LOSE";
+      return;
+    }
+    changeTurnText("Player");
+    computerGridItems.forEach((item) => {
+      item.style.pointerEvents = "all";
+    });
+  }, 1000);
+}
+
+function changeTurnText(text) {
+  turnText.innerText = text;
+}
+
+function playerMove(item, index) {
+  if (computerGridData[index].placed !== null) {
+    computerGridData[index].hit = "success";
+    item.classList.add("hit-success");
+  } else {
+    computerGridData[index].hit = "miss";
+    item.classList.add("hit-miss");
+  }
+}
+
+function computerMove() {
+  let randomIndex = Math.floor(Math.random() * 100);
+  while (isIndexHit(randomIndex)) {
+    randomIndex = Math.floor(Math.random() * 100);
+  }
+  if (playerGridData[randomIndex].placed !== null) {
+    playerGridData[randomIndex].hit = "success";
+    playerGridItems[randomIndex].classList.add("hit-success");
+  } else {
+    playerGridData[randomIndex].hit = "miss";
+    playerGridItems[randomIndex].classList.add("hit-miss");
+  }
+}
+
+function isIndexHit(randomIndex) {
+  return playerGridData[randomIndex].hit !== null;
+}
+
+function checkForWin(gridData) {
+  for (let i = 0; i < gridData.length; i++) {
+    if (gridData[i].placed !== null && gridData[i].hit !== "success") {
+      return false;
+    }
+  }
+  return true;
+}
+
+restartBtn.addEventListener("click", restart);
+
+function restart() {
+  startGameSection.classList.remove("visibility-hidden");
+  btnVSComputer.classList.remove("visibility-hidden");
+  startGameHeading.classList.remove("visibility-hidden");
+  strategySection.classList.add("display-none");
+  game.classList.add("display-none");
+  gameoverSection.classList.add("visibility-hidden");
+  gameoverModal.classList.remove("active");
+  gameResult.innerText = "";
+  dragoverRows = null;
+  dragoverColumns = null;
+  dragoverIndexes = null;
+  dragging;
+  isHorizontal;
+  draggingLength;
+  playerGridData = [];
+  computerGridData = [];
+  playerGridItems.forEach((item) => {
+    item.classList.remove("hit-miss");
+    item.classList.remove("hit-success");
+  });
+  computerGridItems.forEach((item) => {
+    item.classList.remove("hit-miss");
+    item.classList.remove("hit-success");
+  });
+  undropShips();
 }

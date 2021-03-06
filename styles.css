@@ -236,6 +236,12 @@ img {
   align-content: center;
   min-height: 100vh;
 }
+.game h2 {
+  color: white;
+  text-align: center;
+  position: absolute;
+  top: 4rem;
+}
 .game-player-grid,
 .game-computer-grid {
   width: var(--game-grid-size);
@@ -246,11 +252,11 @@ img {
 .game-computer-grid-item {
   position: relative;
 }
-.game-player-grid-item {
+.game-computer-grid-item {
   cursor: pointer;
 }
-.game-player-grid-item.hit-miss,
-.game-player-grid-item.hit-success {
+.game-computer-grid-item.hit-miss,
+.game-computer-grid-item.hit-success {
   cursor: default;
 }
 .game-player-grid-item.hit-miss:after,
@@ -295,7 +301,7 @@ img {
   left: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
-  opacity: 0;
+  opacity: 1;
   pointer-events: none;
   transition: var(--main-transition);
 }
@@ -317,12 +323,14 @@ img {
   justify-content: space-around;
   align-items: center;
   flex-direction: column;
+  pointer-events: none;
 }
 .game-over-modal h2 {
   font-size: 3rem;
 }
 .game-over-modal.active {
   transform: translate(-50%, -50%) scale(1);
+  pointer-events: all;
 }
 .btn-restart {
   background: white;
