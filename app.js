@@ -511,18 +511,21 @@ function checkIfIndexesAreFilled(indexes, data) {
   });
 }
 
+let eventListnersFunctions = [];
 function hitShipLogic() {
   computerGridItems.forEach((item, index) => {
-    item.addEventListener("click", () => handleClick(item, index), {
+    const eventListnerFunction = () => handleClick(item, index);
+    eventListnersFunctions.push(eventListnerFunction);
+    item.addEventListener("click", eventListnerFunction, {
       once: true,
     });
   });
 }
+console.log(eventListnersFunctions);
 
 function handleClick(item, index) {
   playerMove(item, index);
   if (checkForWin(computerGridData)) {
-    console.log("player wins");
     gameoverSection.classList.remove("visibility-hidden");
     gameoverModal.classList.add("active");
     gameResult.innerText = "VICTORY";
@@ -535,7 +538,6 @@ function handleClick(item, index) {
   setTimeout(() => {
     computerMove();
     if (checkForWin(playerGridData)) {
-      console.log("computer wins");
       gameoverSection.classList.remove("visibility-hidden");
       gameoverModal.classList.add("active");
       gameResult.innerText = "YOU LOSE";
@@ -617,4 +619,14 @@ function restart() {
     item.classList.remove("hit-success");
   });
   undropShips();
+  for (let i = 0; i < eventListnersFunctions.length; i++) {
+    computerGridItems[i].removeEventListener(
+      "click",
+      eventListnersFunctions[i],
+      {
+        once: true,
+      }
+    );
+  }
+  eventListnersFunctions = [];
 }
