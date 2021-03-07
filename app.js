@@ -521,7 +521,6 @@ function hitShipLogic() {
     });
   });
 }
-console.log(eventListnersFunctions);
 
 function handleClick(item, index) {
   playerMove(item, index);

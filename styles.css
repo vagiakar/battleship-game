@@ -97,7 +97,7 @@ img {
   visibility: visible;
   transition: var(--main-transition);
 }
-.start-game h1 {
+.start-game-heading {
   font-size: 8rem;
   margin-bottom: 2rem;
   opacity: 1;
@@ -301,6 +301,7 @@ img {
   left: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
+  visibility: visible;
   opacity: 1;
   pointer-events: none;
   transition: var(--main-transition);
@@ -349,5 +350,4 @@ img {
   visibility: hidden;
   opacity: 0;
   font-size: 0;
-  pointer-events: none;
 }
