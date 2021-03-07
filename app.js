@@ -629,4 +629,8 @@ function restart() {
     );
   }
   eventListnersFunctions = [];
+  changeTurnText("Player");
+  computerGridItems.forEach((item) => {
+    item.style.pointerEvents = "all";
+  });
 }
