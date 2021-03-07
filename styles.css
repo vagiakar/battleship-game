@@ -105,7 +105,7 @@ img {
   transition: var(--main-transition);
 }
 .btn-vs-computer {
-  background: var(--red);
+  background: var(--blue-light);
   color: white;
   font-size: 2rem;
   opacity: 1;
@@ -176,7 +176,6 @@ img {
 .ship {
   background: white;
   cursor: move;
-  border: 1px solid lightblue;
 }
 .ship.dragging {
   background: gray;
@@ -235,12 +234,15 @@ img {
   justify-content: center;
   align-content: center;
   min-height: 100vh;
+  position: relative;
 }
 .game h2 {
   color: white;
-  text-align: center;
   position: absolute;
-  top: 4rem;
+  top: 3rem;
+  left: 50%;
+  transform: translate(-50%);
+  font-size: 2.5rem;
 }
 .game-player-grid,
 .game-computer-grid {
@@ -291,6 +293,9 @@ img {
   }
   .game-player-grid {
     margin-bottom: 2rem;
+  }
+  .game h2 {
+    font-size: 1.8rem;
   }
 }
 /*game-over*/

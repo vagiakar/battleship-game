@@ -458,6 +458,7 @@ function undropShips() {
 
 function handleGame() {
   displayGameSection();
+  drawShipsOnPlayerGrid();
   fillComputerGrid();
   console.log(computerGridData);
   hitShipLogic();
@@ -466,6 +467,15 @@ function handleGame() {
 function displayGameSection() {
   strategySection.classList.add("display-none");
   game.classList.remove("display-none");
+}
+
+function drawShipsOnPlayerGrid() {
+  playerGridItems.forEach((item, index) => {
+    if (playerGridData[index].placed !== null) {
+      item.style.background = "white";
+      item.style.border = "none";
+    }
+  });
 }
 
 function fillComputerGrid() {
@@ -631,5 +641,9 @@ function restart() {
   changeTurnText("Player");
   computerGridItems.forEach((item) => {
     item.style.pointerEvents = "all";
+  });
+  playerGridItems.forEach((item) => {
+    item.style.background = "";
+    item.style.border = "";
   });
 }
