@@ -10,11 +10,11 @@
   --red: rgb(155, 0, 0);
   --dark-blue-gray: rgb(0, 0, 22);
   --light-gray: rgb(192, 192, 192);
-  --main-transition: 0.3s all linear;
   --blue-light: rgb(91, 136, 202);
   --ship-piece-size: 100px;
   --strategy-grid-size: 50vmin;
   --game-grid-size: 45vmin;
+  --main-transition: 0.3s all linear;
 }
 body {
   min-height: 100vh;

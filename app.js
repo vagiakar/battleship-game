@@ -23,9 +23,9 @@ const gameoverSection = document.querySelector("#game-over-section");
 const gameResult = document.querySelector("#game-result");
 const gameoverModal = document.querySelector("#game-over-modal");
 const restartBtn = document.querySelector("#restart-btn");
-let dragoverRows = null;
-let dragoverColumns = null;
-let dragoverIndexes = null;
+let dragoverRows;
+let dragoverColumns;
+let dragoverIndexes;
 let dragging;
 let isHorizontal;
 let draggingLength;
@@ -39,15 +39,17 @@ startGameBtn.addEventListener("click", () => {
   handleGame();
 });
 
+restartBtn.addEventListener("click", restart);
+
 function handleStrategy() {
-  initialiseGridData();
+  initialisePlayerGridData();
   displayStrategySection();
   handleDragAndDropShips();
   handleRotate();
   handleDeleteAll();
 }
 
-function initialiseGridData() {
+function initialisePlayerGridData() {
   for (let i = 0; i < 100; i++) {
     playerGridData.push({ placed: null, hit: null });
     computerGridData.push({ placed: null, hit: null });
@@ -97,14 +99,12 @@ function dragEnd(e) {
   strategyPlayerGridItems.forEach((item) => {
     item.classList.remove("dragover");
   });
-  addOrRemoveStartBtn();
+  addStartBtn();
 }
 
-function addOrRemoveStartBtn() {
+function addStartBtn() {
   if (isEveryShipOnGrid()) {
     startGameBtn.classList.remove("visibility-hidden");
-  } else {
-    startGameBtn.classList.add("visibility-hidden");
   }
 }
 
@@ -203,7 +203,7 @@ function changeDragoverIndexes(closestIndex) {
 }
 
 function isOverShip(indexes, rotate = null) {
-  if (indexes == null) return;
+  if (indexes == null || indexes === []) return false;
   const newindexes = [...indexes];
   if (rotate) {
     newindexes.shift();
@@ -252,7 +252,7 @@ function getGridColumn(index) {
 }
 
 function addHover() {
-  if (dragoverIndexes == null) return;
+  if (dragoverIndexes == null || dragoverIndexes == []) return;
   dragoverIndexes.forEach((index) => {
     strategyPlayerGridItems[index].classList.add("dragover");
   });
@@ -460,7 +460,6 @@ function handleGame() {
   displayGameSection();
   drawShipsOnPlayerGrid();
   fillComputerGrid();
-  console.log(computerGridData);
   hitShipLogic();
 }
 
@@ -600,33 +599,8 @@ function checkForWin(gridData) {
   return true;
 }
 
-restartBtn.addEventListener("click", restart);
-
 function restart() {
-  startGameSection.classList.remove("visibility-hidden");
-  btnVSComputer.classList.remove("visibility-hidden");
-  startGameHeading.classList.remove("visibility-hidden");
-  strategySection.classList.add("display-none");
-  game.classList.add("display-none");
-  gameoverSection.classList.add("visibility-hidden");
-  gameoverModal.classList.remove("active");
-  gameResult.innerText = "";
-  dragoverRows = null;
-  dragoverColumns = null;
-  dragoverIndexes = null;
-  dragging;
-  isHorizontal;
-  draggingLength;
-  playerGridData = [];
-  computerGridData = [];
-  playerGridItems.forEach((item) => {
-    item.classList.remove("hit-miss");
-    item.classList.remove("hit-success");
-  });
-  computerGridItems.forEach((item) => {
-    item.classList.remove("hit-miss");
-    item.classList.remove("hit-success");
-  });
+  resetDOM();
   undropShips();
   for (let i = 0; i < eventListnersFunctions.length; i++) {
     computerGridItems[i].removeEventListener(
@@ -637,7 +611,26 @@ function restart() {
       }
     );
   }
-  eventListnersFunctions = [];
+  resetGlobalVariables();
+}
+
+function resetDOM() {
+  startGameSection.classList.remove("visibility-hidden");
+  btnVSComputer.classList.remove("visibility-hidden");
+  startGameHeading.classList.remove("visibility-hidden");
+  strategySection.classList.add("display-none");
+  game.classList.add("display-none");
+  gameoverSection.classList.add("visibility-hidden");
+  gameoverModal.classList.remove("active");
+  playerGridItems.forEach((item) => {
+    item.classList.remove("hit-miss");
+    item.classList.remove("hit-success");
+  });
+  computerGridItems.forEach((item) => {
+    item.classList.remove("hit-miss");
+    item.classList.remove("hit-success");
+  });
+  gameResult.innerText = "";
   changeTurnText("Player");
   computerGridItems.forEach((item) => {
     item.style.pointerEvents = "all";
@@ -646,4 +639,16 @@ function restart() {
     item.style.background = "";
     item.style.border = "";
   });
+}
+
+function resetGlobalVariables() {
+  dragoverRows = null;
+  dragoverColumns = null;
+  dragoverIndexes = null;
+  dragging;
+  isHorizontal;
+  draggingLength;
+  playerGridData = [];
+  computerGridData = [];
+  eventListnersFunctions = [];
 }
