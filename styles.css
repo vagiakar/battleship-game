@@ -31,50 +31,6 @@ img {
   font-size: inherit;
   padding: 0.5rem 1rem;
 }
-/*sound*/
-.sound {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  z-index: 1;
-}
-.sound-icon {
-  font-size: 2rem;
-  color: black;
-  border-radius: 50%;
-  background: white;
-  padding: 0.5rem;
-  cursor: pointer;
-  position: relative;
-  transition: var(--main-transition);
-}
-.sound-icon:hover {
-  background: var(--light-gray);
-}
-.sound-music {
-  margin-right: 1rem;
-}
-.sound-icon.no-music:after {
-  content: "";
-  position: absolute;
-  background: var(--red);
-  height: 100%;
-  width: 5px;
-  top: 0;
-  right: 50%;
-  transform: translateX(50%) rotate(45deg);
-}
-@media only screen and (max-width: 1200px) {
-  .sound-icon {
-    font-size: 1.5rem;
-  }
-}
-@media only screen and (max-width: 600px) {
-  .sound-icon {
-    font-size: 1.2rem;
-  }
-}
 /*start-game*/
 .start-game {
   position: absolute;
@@ -83,7 +39,7 @@ img {
   transform: translateX(50%);
   width: 100vw;
   background-image: linear-gradient(rgba(0, 0, 20, 0.8), rgba(0, 0, 20, 0.8)),
-    url("./images/start.jpg");
+    url("./start.jpg");
   background-position: center;
   background-size: cover;
   height: 100vh;
