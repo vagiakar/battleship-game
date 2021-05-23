@@ -12,8 +12,8 @@
   --light-gray: rgb(192, 192, 192);
   --blue-light: rgb(91, 136, 202);
   --ship-piece-size: 100px;
-  --strategy-grid-size: 50vmin;
-  --game-grid-size: 45vmin;
+  --strategy-grid-size: 60vmin;
+  --game-grid-size: calc(50vmin - 1rem);
   --main-transition: 0.3s all linear;
 }
 body {
@@ -38,10 +38,6 @@ img {
   right: 50%;
   transform: translateX(50%);
   width: 100vw;
-  background-image: linear-gradient(rgba(0, 0, 20, 0.8), rgba(0, 0, 20, 0.8)),
-    url("./start.jpg");
-  background-position: center;
-  background-size: cover;
   height: 100vh;
   color: white;
   display: flex;
@@ -195,17 +191,17 @@ img {
 .game h2 {
   color: white;
   position: absolute;
-  top: 3rem;
+  top: 1rem;
   left: 50%;
-  transform: translate(-50%);
+  transform: translateX(-50%);
   font-size: 2.5rem;
+  text-align: center;
 }
 .game-player-grid,
 .game-computer-grid {
   width: var(--game-grid-size);
   height: var(--game-grid-size);
 }
-
 .game-player-grid-item,
 .game-computer-grid-item {
   position: relative;
@@ -251,7 +247,9 @@ img {
     margin-bottom: 2rem;
   }
   .game h2 {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
+    left: 1rem;
+    transform: translateX(0%);
   }
 }
 /*game-over*/
@@ -278,7 +276,7 @@ img {
   background: var(--blue-light);
   transform: translate(-50%, -50%) scale(0);
   width: 50vw;
-  height: 30vh;
+  height: 150px;
   padding: 1rem;
   transition: var(--main-transition);
   display: flex;
@@ -303,6 +301,14 @@ img {
 .btn-restart:hover {
   background: var(--light-gray);
   color: black;
+}
+@media only screen and (max-width: 600px) {
+  .game-over-modal h2 {
+    font-size: 1.5rem;
+  }
+  .btn-restart {
+    font-size: 1.1rem;
+  }
 }
 .display-none {
   display: none;
