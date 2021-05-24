@@ -23,30 +23,44 @@ const gameoverSection = document.querySelector("#game-over-section");
 const gameResult = document.querySelector("#game-result");
 const gameoverModal = document.querySelector("#game-over-modal");
 const restartBtn = document.querySelector("#restart-btn");
-let dragoverRows;
-let dragoverColumns;
-let dragoverIndexes;
-let dragging;
+let dragoverRows = null;
+let dragoverColumns = null;
+let dragoverIndexes = null;
+let dragging = null;
 let isHorizontal;
-let draggingLength;
-const GRID_SIZE = 10;
+let draggingLength = 0;
 let playerGridData = [];
 let computerGridData = [];
+let eventListnersFunctions = [];
+let clickOffsetX;
+let clickOffsetY;
+const GRID_SIZE = 10;
 
 btnVSComputer.addEventListener("click", handleStrategy);
 
-startGameBtn.addEventListener("click", () => {
-  handleGame();
-});
+startGameBtn.addEventListener("click", handleGame);
 
 restartBtn.addEventListener("click", restart);
+
+ships.forEach((ship) => {
+  ship.addEventListener("dragstart", (e) => {
+    clickOffsetX = e.offsetX;
+    clickOffsetY = e.offsetY;
+    dragStart(e);
+  });
+  ship.addEventListener("dragend", (e) => {
+    dragEnd(e);
+  });
+});
+strategyPlayerGrid.addEventListener("dragover", (e) => {
+  dragover(e, clickOffsetX, clickOffsetY);
+});
 
 function handleStrategy() {
   initialisePlayerGridData();
   displayStrategySection();
-  handleDragAndDropShips();
-  handleRotate();
-  handleDeleteAll();
+  rotateBtn.addEventListener("click", handleRotate);
+  deleteAllBtn.addEventListener("click", undropShips);
 }
 
 function initialisePlayerGridData() {
@@ -63,34 +77,14 @@ function displayStrategySection() {
   strategySection.classList.remove("display-none");
 }
 
-function handleDragAndDropShips() {
-  let clickOffsetX;
-  let clickOffsetY;
-
-  ships.forEach((ship) => {
-    ship.addEventListener("dragstart", (e) => {
-      [clickOffsetX, clickOffsetY] = dragStart(e, clickOffsetX, clickOffsetY);
-    });
-    ship.addEventListener("dragend", (e) => {
-      dragEnd(e);
-    });
-  });
-  strategyPlayerGrid.addEventListener("dragover", (e) => {
-    dragover(e, clickOffsetX, clickOffsetY);
-  });
-}
-
-function dragStart(e, clickOffsetX, clickOffsetY) {
-  e.target.classList.add("dragging");
-  dragging = document.querySelector(".dragging");
-  draggingLength = parseInt(dragging.dataset.shipLength);
+function dragStart(e) {
   dragoverRows = null;
   dragoverColumns = null;
   dragoverIndexes = null;
+  e.target.classList.add("dragging");
+  dragging = document.querySelector(".dragging");
+  draggingLength = parseInt(dragging.dataset.shipLength);
   isHorizontal = isDraggingHorizontal();
-  clickOffsetX = e.offsetX;
-  clickOffsetY = e.offsetY;
-  return [clickOffsetX, clickOffsetY];
 }
 
 function dragEnd(e) {
@@ -99,13 +93,13 @@ function dragEnd(e) {
   strategyPlayerGridItems.forEach((item) => {
     item.classList.remove("dragover");
   });
-  addStartBtn();
+  if (isEveryShipOnGrid()) {
+    addStartBtn();
+  }
 }
 
 function addStartBtn() {
-  if (isEveryShipOnGrid()) {
-    startGameBtn.classList.remove("visibility-hidden");
-  }
+  startGameBtn.classList.remove("visibility-hidden");
 }
 
 function isEveryShipOnGrid() {
@@ -265,7 +259,6 @@ function dropShip() {
     dragoverIndexes == null
   )
     return;
-
   addGridItems();
   removeStrategyPlaced();
   changeGridDropPosition();
@@ -282,7 +275,7 @@ function removeGridItems() {
 
 function addGridItems() {
   strategyPlayerGridItems.forEach((item, index) => {
-    if (playerGridData[index].placed === dragging.classList[1]) {
+    if (playerGridData[index].placed === dragging.dataset.shipName) {
       item.classList.remove("display-none");
     }
   });
@@ -290,7 +283,7 @@ function addGridItems() {
 
 function removeStrategyPlaced() {
   playerGridData.forEach((item) => {
-    if (item.placed === dragging.classList[1]) {
+    if (item.placed === dragging.dataset.shipName) {
       item.placed = null;
     }
   });
@@ -298,7 +291,7 @@ function removeStrategyPlaced() {
 
 function addStrategyPlaced() {
   dragoverIndexes.forEach((index) => {
-    playerGridData[index].placed = dragging.classList[1];
+    playerGridData[index].placed = dragging.dataset.shipName;
   });
 }
 
@@ -312,26 +305,24 @@ function changeGridDropPosition() {
 }
 
 function handleRotate() {
-  rotateBtn.addEventListener("click", () => {
-    if (
-      dragoverIndexes == null ||
-      dragoverColumns == null ||
-      dragoverRows == null
-    )
-      return;
+  if (
+    dragoverIndexes == null ||
+    dragoverColumns == null ||
+    dragoverRows == null
+  )
+    return;
 
-    const [newDragoverRows, newDragoverColumns] = getNewRotatePosition();
-    const newDragoverIndexes = getIndexesFromRowsAndColumns(
-      newDragoverRows,
-      newDragoverColumns
-    );
-    const canRotate = checkIfCanBeRotated(
-      newDragoverIndexes,
-      newDragoverRows,
-      newDragoverColumns
-    );
-    rotate(canRotate, newDragoverRows, newDragoverColumns, newDragoverIndexes);
-  });
+  const [newDragoverRows, newDragoverColumns] = getNewRotatePosition();
+  const newDragoverIndexes = getIndexesFromRowsAndColumns(
+    newDragoverRows,
+    newDragoverColumns
+  );
+  const canRotate = checkIfCanBeRotated(
+    newDragoverIndexes,
+    newDragoverRows,
+    newDragoverColumns
+  );
+  rotate(canRotate, newDragoverRows, newDragoverColumns, newDragoverIndexes);
 }
 
 function rotate(
@@ -357,7 +348,6 @@ function checkIfCanBeRotated(
 ) {
   let canRotate = true;
   if (
-    !checkIfIndexesExist(newDragoverIndexes) ||
     !checkIfRowOrColumnExists(newDragoverRows, newDragoverColumns) ||
     isOverShip(newDragoverIndexes, true)
   ) {
@@ -431,12 +421,6 @@ function getIndexesFromRowsAndColumns(rows, columns) {
     a - b;
   });
   return indexes;
-}
-
-function handleDeleteAll() {
-  deleteAllBtn.addEventListener("click", () => {
-    undropShips();
-  });
 }
 
 function undropShips() {
@@ -520,7 +504,6 @@ function checkIfIndexesAreFilled(indexes, data) {
   });
 }
 
-let eventListnersFunctions = [];
 function hitShipLogic() {
   computerGridItems.forEach((item, index) => {
     const eventListnerFunction = () => handleClick(item, index);
@@ -602,6 +585,11 @@ function checkForWin(gridData) {
 function restart() {
   resetDOM();
   undropShips();
+  removeEventListeners();
+  resetGlobalVariables();
+}
+
+function removeEventListeners() {
   for (let i = 0; i < eventListnersFunctions.length; i++) {
     computerGridItems[i].removeEventListener(
       "click",
@@ -611,9 +599,9 @@ function restart() {
       }
     );
   }
-  resetGlobalVariables();
+  rotateBtn.removeEventListener("click", handleRotate);
+  deleteAllBtn.removeEventListener("click", undropShips);
 }
-
 function resetDOM() {
   startGameSection.classList.remove("visibility-hidden");
   btnVSComputer.classList.remove("visibility-hidden");
@@ -645,10 +633,12 @@ function resetGlobalVariables() {
   dragoverRows = null;
   dragoverColumns = null;
   dragoverIndexes = null;
-  dragging;
-  isHorizontal;
-  draggingLength;
+  dragging = null;
+  isHorizontal = true;
+  draggingLength = 0;
   playerGridData = [];
   computerGridData = [];
   eventListnersFunctions = [];
+  clickOffsetX = null;
+  clickOffsetY = null;
 }
