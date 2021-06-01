@@ -209,36 +209,3 @@ export function checkIfRowOrColumnExists(positions) {
   }
   return true;
 }
-
-/*
-//interact js for drag and drop in mobile
-let position = { x: 0, y: 0 };
-ships.forEach((ship) => {
-  interact(ship).draggable({
-    listeners: {
-      start(e) {
-        rect = e.target.getBoundingClientRect();
-        clickOffsetX = e.clientX - rect.left;
-        clickOffsetY = e.clientY - rect.top;
-        dragStart(e);
-      },
-      move(event) {
-        position.x += event.dx;
-        position.y += event.dy;
-
-        event.target.style.transform = `translate(${position.x}px, ${position.y}px)`;
-      },
-    },
-  });
-});
-interact(strategyPlayerGrid)
-  .dropzone({
-    accept: ".ship",
-  })
-  .on("dropmove", (e) => {
-    dragover(e.dragEvent, clickOffsetX, clickOffsetY);
-  })
-  .on("drop", (e) => {
-    dragEnd(e.dragEvent);
-  });
-*/
